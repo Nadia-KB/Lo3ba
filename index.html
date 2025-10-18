@@ -1,0 +1,513 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Chess 3emrek Tnsah</title>
+  <style>
+    :root{ --light:#f0d9b5; --dark:#b58863; --accent:#3b82f6 }
+
+    body{
+      font-family:system-ui,-apple-system,Segoe UI,Roboto,"Helvetica Neue",Arial;
+      margin:24px;
+      background:#fafafa;
+      color:#111;
+    }
+
+    h1{font-size:18px;margin:0 0 12px}
+
+    .chess-container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      margin: 0 auto;
+    }
+
+    .board{
+      display:grid;
+      grid-template-columns:repeat(8,56px);
+      grid-template-rows:repeat(8,56px);
+      border-radius:8px;
+      overflow:hidden;
+      box-shadow:0 6px 18px rgba(0,0,0,0.08);
+      margin-bottom:20px;
+    }
+
+    .cell{
+      width:56px;
+      height:56px;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      font-size:30px;
+      user-select:none;
+      cursor:pointer;
+    }
+    .cell.light{background:var(--light)}
+    .cell.dark{background:var(--dark)}
+    .cell.highlight{outline:3px solid rgb(0,0,0)}
+
+    .info{
+      max-width:320px;
+      width:90%;
+      text-align:center;
+    }
+
+    .status{
+      margin:8px 0;
+      padding:8px;
+      border-radius:6px;
+      background:#a8a8a8;
+      border:1px solid rgba(0,0,0,0.04);
+    }
+
+    .controls{display:flex;gap:8px;margin-top:12px}
+
+    button{
+      background:var(--accent);
+      color:#fff;
+      border:none;
+      padding:8px 12px;
+      border-radius:6px;
+      cursor:pointer;
+    }
+
+    footer{margin-top:16px;font-size:13px;color:#666}
+
+    .piece-info {
+      margin-top:16px;
+      padding:10px;
+      border:1px solid #ccc;
+      border-radius:8px;
+      background:#fefefe;
+      font-size:14px;
+    }
+    .piece-info h3{
+      margin:0 0 6px 0;
+      font-size:16px;
+      color:#3b82f6;
+    }
+    
+    .cell {
+  border-radius: 6px;              /* coins arrondis */
+  transition: transform 0.2s;      /* pour un effet doux quand on clique */
+    }
+    .cell img {
+  transition: transform 0.2s;
+  box-shadow: 0 4px 8px rgba(0,0,0,0.3); /* ombre douce */
+}
+
+    button {
+  background: linear-gradient(135deg,#3b82f6,#60a5fa);
+  border: none;
+  padding: 10px 16px;
+  border-radius: 8px;
+  color: white;
+  font-weight: bold;
+  cursor: pointer;
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 12px rgba(0,0,0,0.2);
+}
+     .info {
+  background: rgba(255, 255, 255, 0.9);
+  padding: 16px;
+  border-radius: 12px;
+  box-shadow: 0 6px 18px rgba(0,0,0,0.1);
+}
+
+.cell img.white {
+  background-color: rgba(37, 96, 189, 0.318);
+  border-radius: 6px;
+}
+
+.cell img.black {
+  background-color: rgba(173, 21, 21, 0.331);
+  border-radius: 6px;
+}
+
+
+
+    /* Responsive mobile */
+    @media (max-width:600px){
+      .board { grid-template-columns: repeat(8, 40px); grid-template-rows: repeat(8, 40px); }
+      .cell { width: 40px; height: 40px; font-size: 24px; }
+      .info { max-width: 200px; font-size: 12px; }
+    }
+
+    /* Image de fond avec opacité 80% */
+    body::before {
+      content:"";
+      position:fixed;
+      top:0; left:0;
+      width:100%; height:100%;
+      background: url('backround.png') no-repeat center center;
+      background-size:cover;
+      opacity:0.8;
+      z-index:-1;
+    }
+    @keyframes pop {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.3); }
+  100% { transform: scale(1); }
+}
+
+.cell img.pop {
+  animation: pop 0.2s ease;
+}
+ .captured h3 {
+  margin:8px 0;
+  color:#3b82f6;
+  font-size:16px;
+}
+
+#white-captured img, #black-captured img {
+  width:45px;
+  height:45px;
+  object-fit:contain;
+}
+.cell.active-white {
+  background-color: rgba(37, 96, 189, 0.3); /* bleu léger pour pièce blanche active */
+}
+
+.cell.active-black {
+  background-color: rgba(173, 21, 21, 0.3); /* rouge léger pour pièce noire active */
+}
+body.white-turn::after,
+body.black-turn::after {
+  content: "";
+  position: fixed;
+  top: 0; left: 0;
+  width: 100%; height: 100%;
+  z-index: -1;
+  transition: background-color 0.6s ease;
+}
+
+body.white-turn::after {
+  background-color: rgba(23, 65, 133, 0.623); /* léger bleu */
+}
+
+body.black-turn::after {
+  background-color: rgba(205, 22, 22, 0.466); /* léger rouge */
+}
+h1 {
+  font-family: 'Orbitron', sans-serif; /* police futuriste */
+  font-size: 20px;
+  text-transform: uppercase;
+  text-align: center;
+  letter-spacing: 2px;
+  color: #fff; /* couleur de base blanche */
+  text-shadow:
+    0 0 3px #191818,
+    0 0 6px #151515,
+    0 0 12px #131313,
+    0 0 24px #0d0d0d,
+    0 0 36px #131313;
+  margin-bottom: 20px;
+  transition: 0.5s;
+  cursor: default;
+}
+
+/* effet léger de pulsation/glow */
+@keyframes neonGlow {
+  0% {
+    text-shadow:
+      0 0 3px #fff,
+      0 0 6px #fff,
+      0 0 12px #fff,
+      0 0 24px #fff,
+      0 0 36px #fff;
+  }
+  50% {
+    text-shadow:
+      0 0 6px #fff,
+      0 0 12px #fff,
+      0 0 18px #fff,
+      0 0 30px #fff,
+      0 0 42px #fff;
+  }
+  100% {
+    text-shadow:
+      0 0 3px rgb(23, 23, 23)
+      0 0 6px #040404,
+      0 0 12px #0c0c0c,
+      0 0 24px #0f0f0f,
+      0 0 36px #171616;
+  }
+}
+
+h1 {
+  animation: neonGlow 2s infinite alternate;
+}
+
+  </style>
+
+</head>
+<body>
+  <h1>Chess — A Sferte7 La Rbe7ti</h1>
+  <div class="chess-container">
+    <div id="board" class="board" aria-label="échiquier"></div>
+    <div class="info">
+      <div class="status" id="status">Dawr dyalmen: <b id="turn">L7mer</b></div>
+      <div class="controls">
+        <button id="reset">3awed Ter7</button>
+        <button id="flip">9leb Che9leb</button>
+      </div>
+      <div class="piece-info">
+        <h3>Chkun ?</h3>
+        <div id="piece-details">1-0</div>
+      </div>
+      <div class="captured">
+  <h3>Haduk Li Mchaaaaw</h3>
+  <div id="white-captured" style="display:flex;gap:4px;flex-wrap:wrap;"></div>
+  <div id="black-captured" style="display:flex;gap:4px;flex-wrap:wrap;"></div>
+</div>
+
+      <footer>Merhba bik f Chess</footer>
+    </div>
+
+  <script>
+    const pieceRoles = {
+      'K': {name:'Baduri', role:'Malik'},
+      'Q': {name:'Boubekraoui', role:'Malika'},
+      'R': {name:'Amari', role:'5adim'},
+      'B': {name:'Abde Rezze9', role:'3awd'},
+      'N': {name:'Hassib', role:'9el3a'},
+      'P': {name:'Lezre9', role:'Jundy'},
+      'k': {name:'Ismail', role:'Malik'},
+      'q': {name:'Dawi', role:'Malika'},
+      'r': {name:'Bouquellaba', role:'5adima'},
+      'b': {name:'Abde Lattif', role:'3awd'},
+      'n': {name:'Redouane', role:'9el3A'},
+      'p': {name:'Hajji', role:'Jundy'}
+    };
+document.getElementById('reset').addEventListener('click', () => reset());
+document.getElementById('flip').addEventListener('click', () => { flipped = !flipped; render(); });
+
+    const initial = [
+      ['r','n','b','q','k','b','n','r'],
+      ['p','p','p','p','p','p','p','p'],
+      ['','','','','','','',''],
+      ['','','','','','','',''],
+      ['','','','','','','',''],
+      ['','','','','','','',''],
+      ['P','P','P','P','P','P','P','P'],
+      ['R','N','B','Q','K','B','N','R']
+    ];
+
+    let board = [];
+    let selected = null;
+    let legalMoves = [];
+    let whiteTurn = true;
+    let flipped = false;
+
+    const boardEl = document.getElementById('board');
+    const turnEl = document.getElementById('turn');
+
+    function reset() {
+      board = initial.map(r => r.slice());
+      selected = null; legalMoves = []; whiteTurn = true; flipped = false;
+      render(); updateStatus();
+    }
+
+    function inside(x,y){ return x>=0 && x<8 && y>=0 && y<8 }
+
+    function isWhite(piece){ return piece && piece === piece.toUpperCase(); }
+    function isBlack(piece){ return piece && piece === piece.toLowerCase(); }
+
+    function getMoves(x,y){
+      const piece = board[y][x]; if(!piece) return [];
+      const moves = [];
+      const color = isWhite(piece)?'w':'b';
+      const dir = color==='w'?-1:1;
+      const p = piece.toLowerCase();
+
+      if(p==='p'){
+        const ny = y+dir;
+        if(inside(x,ny) && !board[ny][x]) { moves.push({x,y:ny});
+          const startRow = color==='w'?6:1; const ny2=y+dir*2;
+          if(y===startRow && !board[ny2][x]) moves.push({x,y:ny2});
+        }
+        for(const dx of [-1,1]){
+          const nx=x+dx;
+          if(inside(nx,ny) && board[ny][nx] && isWhite(board[ny][nx])!==isWhite(piece)) moves.push({x:nx,y:ny});
+        }
+      }
+
+      if(p==='n'){
+        const deltas=[[1,2],[2,1],[-1,2],[-2,1],[1,-2],[2,-1],[-1,-2],[-2,-1]];
+        for(const [dx,dy] of deltas){
+          const nx=x+dx, ny=y+dy;
+          if(inside(nx,ny) && (!board[ny][nx] || isWhite(board[ny][nx])!==isWhite(piece))) moves.push({x:nx,y:ny});
+        }
+      }
+
+      if(p==='b' || p==='r' || p==='q'){
+        const dirs=[];
+        if(p==='b'||p==='q') dirs.push([1,1],[1,-1],[-1,1],[-1,-1]);
+        if(p==='r'||p==='q') dirs.push([1,0],[-1,0],[0,1],[0,-1]);
+        for(const [dx,dy] of dirs){
+          let nx=x+dx, ny=y+dy;
+          while(inside(nx,ny)){
+            if(!board[ny][nx]) moves.push({x:nx,y:ny});
+            else { if(isWhite(board[ny][nx])!==isWhite(piece)) moves.push({x:nx,y:ny}); break; }
+            nx+=dx; ny+=dy;
+          }
+        }
+      }
+
+      if(p==='k'){
+        for(let dx=-1;dx<=1;dx++){
+          for(let dy=-1;dy<=1;dy++){
+            if(dx===0 && dy===0) continue;
+            const nx=x+dx, ny=y+dy;
+            if(inside(nx,ny) && (!board[ny][nx] || isWhite(board[ny][nx])!==isWhite(piece))) moves.push({x:nx,y:ny});
+          }
+        }
+      }
+
+      return moves;
+    }
+
+    function pieceToGlyph(p){
+      const map = {
+        'K':'K_white.PNG',
+        'Q':'Q_white.PNG',
+        'R':'R_white.PNG',
+        'B':'B_white.PNG',
+        'N':'k_black.PNG',
+        'P':'P_white.PNG',
+        'k':'p_black.PNG',
+        'q':'q_black.PNG',
+        'r':'b_black.PNG',
+        'b':'r_black.PNG',
+        'n':'n_black.PNG',
+        'p':'N_white.PNG'
+      };
+      // Déterminer la couleur
+  const colorClass = isWhite(p) ? 'white' : 'black';
+  
+  // Ajouter la classe à l'image
+      return `<img src="profs/${map[p]}" alt="${p}"class="${colorClass}" style="width:40px;height:40px;object-fit:contain;pointer-events:none;">`;
+    }
+
+    function render(){
+      boardEl.innerHTML='';
+      for(let r=0;r<8;r++){
+        for(let c=0;c<8;c++){
+          const y=flipped?7-r:r;
+          const x=flipped?7-c:c;
+          const cell=document.createElement('div');
+          cell.className='cell '+((r+c)%2===0?'light':'dark');
+          cell.dataset.x=x;
+          cell.dataset.y=y;
+          const piece=board[y][x];
+          cell.innerHTML=piece?pieceToGlyph(piece):'';
+
+          if(selected && selected.x==x && selected.y==y) cell.classList.add('highlight');
+          for(const m of legalMoves){ if(m.x==x && m.y==y) cell.classList.add('highlight'); }
+
+          cell.addEventListener('click', onCellClick);
+          boardEl.appendChild(cell);
+        }
+      }
+    }
+
+    function makeMove(sx,sy,tx,ty){
+  const moving = board[sy][sx];
+  const target = board[ty][tx];
+
+  // Gestion des captures
+ // Gestion des captures
+if (target) {
+  const captureContainer = isWhite(target)
+    ? document.getElementById('white-captured')
+    : document.getElementById('black-captured');
+
+  const img = document.createElement('img');
+  const srcMatch = pieceToGlyph(target).match(/src="(.*?)"/);
+  if (srcMatch) img.src = srcMatch[1];
+  captureContainer.appendChild(img);
+
+  // Effet flash sur la pièce capturée
+  img.classList.add('captured-flash');
+  img.addEventListener('animationend', () => img.classList.remove('captured-flash'));
+}
+
+
+  // Promotion des pions
+  if(moving && moving.toLowerCase() === 'p' && (ty===0||ty===7)) board[ty][tx] = isWhite(moving)?'Q':'q';
+  else board[ty][tx] = moving;
+
+  board[sy][sx]='';
+  whiteTurn = !whiteTurn;
+}
+
+
+
+
+    function onCellClick(e){
+  const x = +e.currentTarget.dataset.x;
+  const y = +e.currentTarget.dataset.y;
+  const piece = board[y][x];
+  const detailsEl = document.getElementById('piece-details');
+
+  // Supprimer les classes actives de toutes les cellules
+  document.querySelectorAll('.cell').forEach(c => {
+    c.classList.remove('active-white', 'active-black');
+  });
+
+  if(selected){
+    const found = legalMoves.find(m => m.x === x && m.y === y);
+    if(found){
+      makeMove(selected.x, selected.y, x, y);
+      selected = null;
+      legalMoves = [];
+      render();
+      updateStatus();
+      detailsEl.textContent = 'Clique sur une pièce pour voir son nom et rôle';
+      return;
+    }
+  }
+
+  // Animation "pop" pour la pièce cliquée
+  const clickedImg = e.currentTarget.querySelector('img');
+  if(clickedImg){
+    clickedImg.classList.remove('pop');
+    void clickedImg.offsetWidth;
+    clickedImg.classList.add('pop');
+  }
+
+  if(piece && isWhite(piece) === whiteTurn){
+    selected = {x, y};
+    legalMoves = getMoves(x, y);
+    render();
+
+    // Ajouter la classe active selon couleur
+    e.currentTarget.classList.add(isWhite(piece) ? 'active-white' : 'active-black');
+
+    const info = pieceRoles[piece];
+    detailsEl.innerHTML = `<b>${info.name}</b> — rôle: ${info.role}`;
+  } else {
+    selected = null;
+    legalMoves = [];
+    render();
+    detailsEl.textContent = 'Clique sur une pièce pour voir son nom et rôle';
+  }
+}
+
+
+    function updateStatus() {
+  turnEl.textContent = whiteTurn ? 'Blanc' : 'Noir';
+  document.body.classList.remove('white-turn', 'black-turn');
+  document.body.classList.add(whiteTurn ? 'white-turn' : 'black-turn');
+}
+
+
+    reset();
+  </script>
+</body>
+</html>
