@@ -373,26 +373,25 @@ document.getElementById('flip').addEventListener('click', () => { flipped = !fli
     }
 
     function pieceToGlyph(p){
-      const map = {
-        'K':'K_white.PNG',
-        'Q':'Q_white.PNG',
-        'R':'R_white.PNG',
-        'B':'B_white.PNG',
-        'N':'k_black.PNG',
-        'P':'P_white.PNG',
-        'k':'p_black.PNG',
-        'q':'q_black.PNG',
-        'r':'b_black.PNG',
-        'b':'r_black.PNG',
-        'n':'n_black.PNG',
-        'p':'N_white.PNG'
-      };
-      // Déterminer la couleur
+  const map = {
+    'K':'K_white.PNG',
+    'Q':'Q_white.PNG',
+    'R':'R_white.PNG',
+    'B':'B_white.PNG',
+    'N':'k_black.PNG',
+    'P':'P_white.PNG',
+    'k':'p_black.PNG',
+    'q':'q_black.PNG',
+    'r':'b_black.PNG',
+    'b':'r_black.PNG',
+    'n':'n_black.PNG',
+    'p':'N_white.PNG'
+  };
   const colorClass = isWhite(p) ? 'white' : 'black';
-  
-  // Ajouter la classe à l'image
-      return `<img src="profs/${map[p]}" alt="${p}"class="${colorClass}" style="width:40px;height:40px;object-fit:contain;pointer-events:none;">`;
-    }
+
+  // Ici on met juste le nom du fichier
+  return `<img src="${map[p]}" alt="${p}" class="${colorClass}" style="width:40px;height:40px;object-fit:contain;pointer-events:none;">`;
+}
 
     function render(){
       boardEl.innerHTML='';
